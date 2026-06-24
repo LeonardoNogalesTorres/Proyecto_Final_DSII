@@ -1,38 +1,42 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>SGA - Inicio de Sesión</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>UPDS Online - Inicio de Sesión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 </head>
-<body class="bg-light d-flex align-items-center" style="height: 100vh;">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-4">
-                <div class="card shadow border-0 p-3">
-                    <div class="card-body">
-                        <h4 class="text-center text-primary fw-bold mb-3">UPDS</h4>
-                        <p class="text-muted text-center small mb-4">Seguimiento de Proyectos de Grado</p>
-                        
-                        @if($errors->any())
-                            <div class="alert alert-danger py-2 small">{{ $errors->first() }}</div>
-                        @endif
-
-                        <form action="{{ url('/login') }}" method="POST">
-                            @csrf
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Correo Electrónico</label>
-                                <input type="email" name="email" class="form-control" required value="{{ old('email') }}">
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label small fw-bold text-secondary">Contraseña</label>
-                                <input type="password" name="password" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 fw-bold">Ingresar</button>
-                        </form>
-                    </div>
+<body class="bg-[#f7f9fb] flex items-center justify-center min-h-screen" style="font-family: 'Hanken Grotesk', sans-serif;">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+        <div class="bg-[#003360] p-6 text-center text-white relative">
+            <h2 class="text-2xl font-bold tracking-tight">UPDS <span class="font-light text-sky-400">online</span></h2>
+            <p class="text-xs text-white/70 mt-1 uppercase tracking-wider">Sistema de Consulta Académica</p>
+        </div>
+        
+        <div class="p-8">
+            <h3 class="text-lg font-semibold text-[#003360] mb-6 text-center">Seguimiento de Proyecto de Grado</h3>
+            
+            @if($errors->any())
+                <div class="bg-red-50 border-l-4 border-red-500 p-3 mb-4 rounded text-sm text-red-700">
+                    {{ $errors->first() }}
                 </div>
-            </div>
+            @endif
+
+            <form action="{{ url('/login') }}" method="POST" class="space-y-5">
+                @csrf
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 mb-1">Correo Institucional</label>
+                    <input type="email" name="email" class="w-full p-2.5 border border-gray-300 rounded focus:outline-none focus:border-[#003360] transition-colors" required value="{{ old('email') }}" placeholder="usuario@upds.edu">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 mb-1">Contraseña</label>
+                    <input type="password" name="password" class="w-full p-2.5 border border-gray-300 rounded focus:outline-none focus:border-[#003360] transition-colors" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-[#003360] text-white py-2.5 rounded font-bold hover:bg-[#002244] transition-colors tracking-wide mt-2 shadow-sm">
+                    INGRESAR
+                </button>
+            </form>
         </div>
     </div>
 </body>

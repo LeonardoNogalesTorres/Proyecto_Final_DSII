@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 class TutorController extends Controller
 {
-    public function dashboard() {
+    public function dashboard()
+    {
         // Obtener proyectos asignados al tutor logueado
         $proyectos = DB::table('proyectos')
             ->join('users', 'proyectos.estudiante_id', '=', 'users.id')
@@ -19,7 +20,8 @@ class TutorController extends Controller
         return view('tutor.dashboard', compact('proyectos'));
     }
 
-    public function revisarProyecto($id) {
+    public function revisarProyecto($id)
+    {
         $proyecto = DB::table('proyectos')
             ->join('users', 'proyectos.estudiante_id', '=', 'users.id')
             ->where('proyectos.id', $id)
@@ -38,17 +40,48 @@ class TutorController extends Controller
     }
 
     // Tarea 1.14: Programación inmutable de retroalimentación
-    public function guardarObservacion(Request $request, $avanceId) {
-        $request->validate(['comentario' => 'required|string']);
-
-        DB::table('observaciones')->insert([
-            'avance_id' => $avanceId,
-            'autor_id' => Auth::id(),
-            'comentario' => $request->comentario,
-            'created_at' => now(),
-            'updated_at' => now()
+    public function guardarObservacion(Request $request, $avanceId)
+    {
+        // Validación estricta incluyendo el nuevo archivo adjunto del tutor
+        $request->validate([
+            'comentario' => 'required|string',
+            'adjunto_tutor' => 'nullable|file|mimes:pdf,docx|max:10240', // Max 10MB
+            'nuevo_estado' => 'required|in:en_desarrollo,observado,aprobado' // HU-04: Estados válidos
         ]);
 
-        return back()->with('notificacion', 'Observación guardada de forma inmutable en el registro académico.');
+        $rutaAdjunto = null;
+
+        // Si el tutor subió un documento de respaldo, lo almacenamos localmente
+        if ($request->hasFile('adjunto_tutor')) {
+            $archivo = $request->file('adjunto_tutor');
+            $nombreArchivo = 'tutor_' . time() . '_' . $archivo->getClientOriginalName();
+            $archivo->move(public_path('repositorio_evidencias'), $nombreArchivo);
+            $rutaAdjunto = 'repositorio_evidencias/' . $nombreArchivo;
+        }
+
+        // Transacción para asegurar la inmutabilidad y la consistencia de datos
+        DB::transaction(function () use ($avanceId, $request, $rutaAdjunto) {
+
+            // 1. Insertar la observación inmutable
+            DB::table('observaciones')->insert([
+                'avance_id' => $avanceId,
+                'autor_id' => Auth::id(),
+                'comentario' => $request->comentario,
+                'ruta_adjunto' => $rutaAdjunto, // Guardamos la ruta del archivo del tutor
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // 2. HU-04: Buscar el proyecto asociado a este avance para cambiar su estado oficial
+            $avance = DB::table('avances')->where('id', $avanceId)->first();
+            if ($avance) {
+                DB::table('proyectos')->where('id', $avance->proyecto_id)->update([
+                    'estado' => $request->nuevo_estado,
+                    'updated_at' => now()
+                ]);
+            }
+        });
+
+        return back()->with('notificacion', 'Observación asentada y estado del proyecto actualizado oficialmente.');
     }
 }

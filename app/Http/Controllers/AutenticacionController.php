@@ -7,11 +7,13 @@ use Illuminate\Support\Facades\Auth;
 
 class AutenticacionController extends Controller
 {
-    public function mostrarLogin() {
+    public function mostrarLogin()
+    {
         return view('auth.login');
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $credenciales = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
@@ -21,15 +23,21 @@ class AutenticacionController extends Controller
             $request->session()->regenerate();
             $rol = Auth::user()->role;
 
-            if ($rol === 'director') return redirect('/director/dashboard');
-            if ($rol === 'tutor') return redirect('/tutor/dashboard');
+            if ($rol === 'estudiante') {
+                return redirect('/estudiante/inicio');
+            }
+            if ($rol === 'director')
+                return redirect('/director/dashboard');
+            if ($rol === 'tutor')
+                return redirect('/tutor/dashboard');
             return redirect('/estudiante/dashboard');
         }
 
         return back()->withErrors(['email' => 'Credenciales inválidas'])->withInput();
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
